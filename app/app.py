@@ -1,8 +1,8 @@
 import os
 
 import pymysql
-from pymysql.constants import CLIENT
 from flask import Flask, jsonify, request
+from pymysql.constants import CLIENT
 
 app = Flask(__name__)
 
@@ -75,6 +75,8 @@ def list_notes():
             return jsonify(cur.fetchall()), 200
     finally:
         conn.close()
+
+
 @app.route("/notes/<int:note_id>", methods=["PUT"])
 def update_note(note_id):
     data = request.get_json()
@@ -108,6 +110,8 @@ def delete_note(note_id):
         return jsonify(message="note deleted"), 200
     finally:
         conn.close()
+
+
 init_db()
 
 
