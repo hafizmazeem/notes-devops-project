@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   lint-and-build:
     runs-on: ubuntu-latest
@@ -23,5 +26,18 @@ jobs:
       - name: Lint
         run: flake8 app/app.py --max-line-length=100
 
-      - name: Build Docker image
-        run: docker build -t notes-app:ci ./app
+      - name: Log in to Docker Hub
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/notes-app:${{ github.sha }} -t ${{ secrets.DOCKERHUB_USERNAME }}/notes-app:latest ./app
+
+      - name: Push image
+        if: github.event_name == 'push'
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/notes-app:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/notes-app:latest
